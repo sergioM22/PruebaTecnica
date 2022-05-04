@@ -1,0 +1,223 @@
+--crear bd-----
+Create database	Tienda;
+
+--usar base de datos
+use Tienda;
+
+---CREACION DE TABLAS
+create table Producto(
+idProducto int not null IDENTITY ,
+NombreProd varchar(40) not null,
+Precio int not null,
+primary key(idProducto));
+
+CREATE TABLE Usuario(
+    idUsuario int NOT NULL IDENTITY ,
+    NombreUsuario varchar(30) NOT NULL,
+    Contraseña varchar(40),
+	idProducto int not null,
+	foreign key(idProducto ) references Producto (idProducto),
+    PRIMARY KEY (idUsuario)
+);
+CREATE TABLE Compra(
+	idUsuario int not null,
+	idProducto int not null,
+	NombreUsuario varchar(30) not null,
+	CompraProducto varchar(30) not null,
+	Precio int,
+	foreign key(idUsuario) references Usuario(idUsuario),
+	foreign key(idProducto) references Producto(idProducto)
+)
+-------------Consultas tablas---------------
+select * from Producto
+select * from Usuario
+select * from Compra
+------------------INSERTS------------------
+
+INSERT INTO Usuario(NombreUsuario,Contraseña,idProducto) values
+('Jorge Villareal','contraseña1','1'),
+('Itala Santos','contraseña2','2'),
+('Pablo Rivas','contraseña3','3'),
+('Mario Vargas','contraseña4','4'),
+('Matias Pillco','contraseña5','5'),
+('Jarixa Muñoz','contraseña6','6'),
+('Sergio Yepez','contraseña7','7'),
+('Eduardo Bravo','contraseña8','8'),
+('Isabella Ponte','contraseña9','9'),
+('Jazmin Tafur','contraseña10','10'),
+('Juan Verastegui','contraseña11','11')
+
+
+INSERT INTO PRODUCTO(NombreProd,Precio) values
+('AOC','1200'),
+('LENOVO','1700'),
+('SOYMOMO','300'),
+('WINIA','1749'),
+('ELECTROLUX','779'),
+('THOMAS','119'),
+('GUESS','699'),
+('REYES','270'),
+('MANGO','169'),
+('MICA','1299'),
+('TUHOME','624')
+
+Insert into Compra(idUsuario,idProducto, NombreUsuario, CompraProducto, Precio)
+select  u.idUsuario,u.idProducto, u.NombreUsuario, p.NombreProd, p.precio from Producto p, Usuario u
+---------------------- ProceduresListar ----------------------
+--1.listarUsuario
+Create proc sp_lista_usuario
+as
+begin
+	select 
+	idUsuario, NombreUsuario, Contraseña, idProducto
+	from Usuario
+end
+--execute
+exec sp_lista_usuario
+
+
+--2.listarProductos
+Create proc sp_lista_productos
+as
+begin
+	select  
+	idProducto, NombreProd, Precio
+	from Producto
+end
+--execute
+exec sp_lista_productos
+
+
+--3.listarCompra
+Create proc sp_lista_Compra
+as
+begin
+	select
+	idUsuario, idProducto, NombreUsuario, CompraProducto, Precio
+	from Compra	
+end
+--execute
+exec sp_lista_Compra
+
+
+--4ListarPorUsuarioListaDeCompras
+Create proc sp_lista_ComprasXUsuario
+@idUsuario int
+as
+begin
+	select idUsuario,NombreUsuario, CompraProducto, Precio 
+	from Compra 
+	where idUsuario like '%' + @idUsuario+ '%'
+end
+
+
+
+-----------------Procedures Agregar---------------------
+--AgregarUsuario
+create proc sp_agregar_usuario(
+@nombusuario varchar(50),
+@contraseña varchar(50),
+@idProducto int
+)as
+begin 
+	insert into Usuario(NombreUsuario, Contraseña, idProducto)
+	values (@nombusuario, @contraseña, @idProducto)
+end
+--AgregarProducto
+create proc sp_agregar_producto(
+@nombreprod varchar(50),
+@precio int
+)
+as
+begin
+	insert into Producto(NombreProd, Precio)
+	values (@nombreprod, @precio)
+end
+
+
+--AgregarCompra
+create proc sp_agregar_Compra(
+@idusuario int,
+@idproducto int,
+@nombreusuario varchar(50),
+@nombreproducto varchar(20),
+@precio int
+)
+as
+begin
+	insert into Compra(idUsuario, idProducto ,NombreUsuario, CompraProducto, Precio)
+	values (@idusuario,@idproducto, @nombreusuario, @nombreproducto, @precio)
+end
+---------------- PROCEDURE EDITAR------------
+
+--EditarUsuario
+create proc sp_editar_usuario(
+@idUsuario int,
+@nombUsuario varchar(50) null,
+@contraseña varchar(50) null,
+@idProducto int  null
+)as
+begin
+
+	update Usuario set
+	NombreUsuario = isnull(@nombUsuario,NombreUsuario),
+	Contraseña= isnull(@contraseña,Contraseña),
+	idProducto= isnull(@idProducto, idProducto)
+	where idUsuario = @idUsuario
+end
+
+--EditarProducto
+create proc sp_editar_producto(
+@idProducto int,
+@nombreProd varchar(50) null,
+@precio int  null
+)as
+begin
+
+	update Producto set
+	NombreProd = isnull(@nombreProd,NombreProd),
+	Precio= isnull(@precio, Precio)
+	where idProducto = @idProducto
+end
+
+--EditarCompra
+create proc sp_editar_compra(
+@nombreProducto varchar(50),
+@nombreUsuario varchar(50) null,
+@precio int  null
+)as
+begin
+
+	update Compra set
+	NombreUsuario= isnull(@nombreUsuario,NombreUsuario),
+	Precio= isnull(@precio, Precio)
+	where CompraProducto= @nombreProducto
+end
+-------------------PROCEDURE ELIMINAR-------------------------
+--Borrar usuario
+create proc sp_eliminar_usuario(
+@idUsuario int
+)as
+begin
+
+ delete from Usuario where idUsuario = @idUsuario
+
+end
+--Borrar producto
+create proc sp_eliminar_producto(
+@idProducto int
+)as
+begin
+
+ delete from PRODUCTO where idProducto = @idProducto
+
+end
+--Borrar compra
+create proc sp_eliminar_compra(
+@idcompra int
+)as
+begin
+
+ delete from Compra where CompraProducto = @idcompra
+
+end
